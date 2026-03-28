@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import {
-  LayoutDashboard, Users, Building2, ClipboardList, UserCircle,
+  LayoutDashboard, Users, Building2, ClipboardList, UserCircle, FolderOpen,
   Plane, CalendarDays, Target, Bell, DollarSign, BarChart3, Settings,
   ChevronLeft, ChevronRight
 } from "lucide-react";
@@ -12,6 +12,7 @@ const menuItems = [
   { label: "Départements", icon: Building2, path: "/departements" },
   { label: "Gestion des Tâches", icon: ClipboardList, path: "/taches" },
   { label: "Clients & Dossiers", icon: UserCircle, path: "/clients" },
+  { label: "Gestion Dossiers", icon: FolderOpen, path: "/dossiers" },
   { label: "Opérations Voyages", icon: Plane, path: "/voyages" },
   { label: "Réunions", icon: CalendarDays, path: "/reunions" },
   { label: "Objectifs & Performance", icon: Target, path: "/objectifs" },

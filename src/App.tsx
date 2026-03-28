@@ -9,6 +9,8 @@ import RH from "./pages/RH";
 import Departements from "./pages/Departements";
 import Taches from "./pages/Taches";
 import Clients from "./pages/Clients";
+import Dossiers from "./pages/Dossiers";
+import DossierDetail from "./pages/DossierDetail";
 import Voyages from "./pages/Voyages";
 import Reunions from "./pages/Reunions";
 import Objectifs from "./pages/Objectifs";
@@ -33,6 +35,8 @@ const App = () => (
             <Route path="/departements" element={<Departements />} />
             <Route path="/taches" element={<Taches />} />
             <Route path="/clients" element={<Clients />} />
+            <Route path="/dossiers" element={<Dossiers />} />
+            <Route path="/dossiers/:id" element={<DossierDetail />} />
             <Route path="/voyages" element={<Voyages />} />
             <Route path="/reunions" element={<Reunions />} />
             <Route path="/objectifs" element={<Objectifs />} />
