@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import {
-  LayoutDashboard, Users, Building2, ClipboardList, UserCircle,
+  LayoutDashboard, Users, Building2, ClipboardList, UserCircle, FolderOpen,
   Plane, CalendarDays, Target, Bell, DollarSign, BarChart3, Settings,
   ChevronLeft, ChevronRight
 } from "lucide-react";
