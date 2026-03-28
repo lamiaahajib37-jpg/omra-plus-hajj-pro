@@ -188,10 +188,10 @@ export default function Dossiers() {
 
       {/* KPI */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Dossiers" value={dossiers.length.toString()} icon={<FolderOpen className="text-primary" size={22} />} />
-        <StatCard title="Dossiers Actifs" value={dossiersActifs.toString()} icon={<Users className="text-primary" size={22} />} />
-        <StatCard title="CA Prévisionnel" value={`${(totalCA / 1000).toFixed(0)}K MAD`} icon={<DollarSign className="text-primary" size={22} />} />
-        <StatCard title="Marge Totale" value={`${(totalMarge / 1000).toFixed(0)}K MAD`} icon={<DollarSign className="text-primary" size={22} />} />
+        <StatCard title="Total Dossiers" value={dossiers.length.toString()} icon={FolderOpen} />
+        <StatCard title="Dossiers Actifs" value={dossiersActifs.toString()} icon={Users} />
+        <StatCard title="CA Prévisionnel" value={`${(totalCA / 1000).toFixed(0)}K MAD`} icon={DollarSign} />
+        <StatCard title="Marge Totale" value={`${(totalMarge / 1000).toFixed(0)}K MAD`} icon={DollarSign} />
       </div>
 
       {/* Filters */}
