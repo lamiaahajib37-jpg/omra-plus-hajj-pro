@@ -12,6 +12,7 @@ const menuItems = [
   { label: "Départements", icon: Building2, path: "/departements" },
   { label: "Gestion des Tâches", icon: ClipboardList, path: "/taches" },
   { label: "Clients & Dossiers", icon: UserCircle, path: "/clients" },
+  { label: "Gestion Dossiers", icon: FolderOpen, path: "/dossiers" },
   { label: "Opérations Voyages", icon: Plane, path: "/voyages" },
   { label: "Réunions", icon: CalendarDays, path: "/reunions" },
   { label: "Objectifs & Performance", icon: Target, path: "/objectifs" },

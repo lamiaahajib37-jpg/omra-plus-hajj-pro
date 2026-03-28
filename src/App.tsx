@@ -9,6 +9,8 @@ import RH from "./pages/RH";
 import Departements from "./pages/Departements";
 import Taches from "./pages/Taches";
 import Clients from "./pages/Clients";
+import Dossiers from "./pages/Dossiers";
+import DossierDetail from "./pages/DossierDetail";
 import Voyages from "./pages/Voyages";
 import Reunions from "./pages/Reunions";
 import Objectifs from "./pages/Objectifs";

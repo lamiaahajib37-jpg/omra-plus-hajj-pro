@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import StatCard from "@/components/StatCard";
+import { StatCard } from "@/components/StatCard";
 
 type DossierStatus = "en_cours" | "confirme" | "en_attente" | "annule" | "termine";
 type DossierType = "hajj" | "omra" | "tourisme";
