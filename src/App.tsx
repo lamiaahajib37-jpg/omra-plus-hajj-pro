@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ERPLayout } from "@/components/ERPLayout";
-import { ClientLayout } from "@/components/ClientLayout";
 import Dashboard from "./pages/Dashboard";
 import RH from "./pages/RH";
 import Departements from "./pages/Departements";
@@ -18,16 +17,6 @@ import Rapports from "./pages/Rapports";
 import Notifications from "./pages/Notifications";
 import Parametres from "./pages/Parametres";
 import NotFound from "./pages/NotFound";
-import ClientLogin from "./pages/ClientLogin";
-import ClientDashboard from "./pages/client/ClientDashboard";
-import ClientDossiers from "./pages/client/ClientDossiers";
-import ClientCosting from "./pages/client/ClientCosting";
-import ClientDocuments from "./pages/client/ClientDocuments";
-import ClientDevis from "./pages/client/ClientDevis";
-import ClientTaches from "./pages/client/ClientTaches";
-import ClientObjectifs from "./pages/client/ClientObjectifs";
-import ClientReunions from "./pages/client/ClientReunions";
-import ClientPointage from "./pages/client/ClientPointage";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +27,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Admin ERP */}
           <Route element={<ERPLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/rh" element={<RH />} />
@@ -52,19 +40,6 @@ const App = () => (
             <Route path="/rapports" element={<Rapports />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/parametres" element={<Parametres />} />
-          </Route>
-          {/* Client Portal */}
-          <Route path="/client/login" element={<ClientLogin />} />
-          <Route element={<ClientLayout />}>
-            <Route path="/client" element={<ClientDashboard />} />
-            <Route path="/client/dossiers" element={<ClientDossiers />} />
-            <Route path="/client/costing" element={<ClientCosting />} />
-            <Route path="/client/documents" element={<ClientDocuments />} />
-            <Route path="/client/devis" element={<ClientDevis />} />
-            <Route path="/client/taches" element={<ClientTaches />} />
-            <Route path="/client/objectifs" element={<ClientObjectifs />} />
-            <Route path="/client/reunions" element={<ClientReunions />} />
-            <Route path="/client/pointage" element={<ClientPointage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
