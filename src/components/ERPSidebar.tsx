@@ -2,11 +2,12 @@ import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, ClipboardList, UserCircle, FolderOpen,
   Plane, CalendarDays, Target, Bell, DollarSign, BarChart3, Settings,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, LogOut
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 
-const menuItems = [
+const adminMenu = [
   { label: "Tableau de bord", icon: LayoutDashboard, path: "/" },
   { label: "Ressources Humaines", icon: Users, path: "/rh" },
   { label: "Départements", icon: Building2, path: "/departements" },
@@ -22,6 +23,13 @@ const menuItems = [
   { label: "Paramètres", icon: Settings, path: "/parametres" },
 ];
 
+const employeeMenu = [
+  { label: "Mon Espace", icon: LayoutDashboard, path: "/" },
+  { label: "Mes Dossiers", icon: FolderOpen, path: "/dossiers" },
+  { label: "Mes Tâches", icon: ClipboardList, path: "/taches" },
+  { label: "Notifications", icon: Bell, path: "/notifications" },
+];
+
 interface Props {
   open: boolean;
   onToggle: () => void;
@@ -29,6 +37,8 @@ interface Props {
 
 export function ERPSidebar({ open, onToggle }: Props) {
   const location = useLocation();
+  const { user, isAdmin, logout } = useAuth();
+  const menuItems = isAdmin ? adminMenu : employeeMenu;
 
   return (
     <aside
@@ -69,19 +79,26 @@ export function ERPSidebar({ open, onToggle }: Props) {
       </nav>
 
       {/* User chip */}
-      {open && (
-        <div className="p-3 border-t border-sidebar-border">
+      <div className="p-3 border-t border-sidebar-border">
+        {open ? (
           <div className="flex items-center gap-3 px-2 py-2">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
-              AM
+              {user?.initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate text-sidebar-accent-foreground">Admin Manager</p>
-              <p className="text-xs text-sidebar-foreground truncate">admin@accessmorocco.ma</p>
+              <p className="text-sm font-medium truncate text-sidebar-accent-foreground">{user?.name}</p>
+              <p className="text-xs text-sidebar-foreground truncate">{user?.email}</p>
             </div>
+            <button onClick={logout} className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors" title="Déconnexion">
+              <LogOut size={16} />
+            </button>
           </div>
-        </div>
-      )}
+        ) : (
+          <button onClick={logout} className="w-full flex justify-center p-1.5 rounded-md hover:bg-sidebar-accent transition-colors" title="Déconnexion">
+            <LogOut size={16} />
+          </button>
+        )}
+      </div>
     </aside>
   );
 }
