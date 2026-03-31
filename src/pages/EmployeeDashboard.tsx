@@ -58,10 +58,10 @@ export default function EmployeeDashboard() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Mes Dossiers" value={myDossiers.length.toString()} icon={FolderOpen} trend="+2 ce mois" />
-        <StatCard title="Dossiers Actifs" value={activeDossiers.toString()} icon={Clock} trend="3 urgents" />
-        <StatCard title="Tâches En Cours" value={myTasks.filter((t) => t.status === "en_cours").length.toString()} icon={CheckCircle2} trend="2 aujourd'hui" />
-        <StatCard title="Marge Générée" value={`${(totalMarge / 1000).toFixed(0)}K MAD`} icon={TrendingUp} trend="+12%" />
+        <StatCard title="Mes Dossiers" value={myDossiers.length.toString()} icon={FolderOpen} change="+2 ce mois" changeType="up" />
+        <StatCard title="Dossiers Actifs" value={activeDossiers.toString()} icon={Clock} change="3 urgents" changeType="neutral" />
+        <StatCard title="Tâches En Cours" value={myTasks.filter((t) => t.status === "en_cours").length.toString()} icon={CheckCircle2} change="2 aujourd'hui" changeType="neutral" />
+        <StatCard title="Marge Générée" value={`${(totalMarge / 1000).toFixed(0)}K MAD`} icon={TrendingUp} change="+12%" changeType="up" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
