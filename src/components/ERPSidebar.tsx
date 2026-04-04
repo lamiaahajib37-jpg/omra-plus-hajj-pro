@@ -2,7 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, ClipboardList, UserCircle, FolderOpen,
   Plane, CalendarDays, Target, Bell, DollarSign, BarChart3, Settings,
-  ChevronLeft, ChevronRight, LogOut
+  ChevronLeft, ChevronRight, LogOut, Briefcase, UserPlus, Package, PieChart
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
