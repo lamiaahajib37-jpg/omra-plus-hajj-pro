@@ -2,7 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, ClipboardList, UserCircle, FolderOpen,
   Plane, CalendarDays, Target, Bell, DollarSign, BarChart3, Settings,
-  ChevronLeft, ChevronRight, LogOut
+  ChevronLeft, ChevronRight, LogOut, Briefcase, UserPlus, Package, PieChart
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
@@ -21,6 +21,11 @@ const adminMenu = [
   { label: "Rapports & Statistiques", icon: BarChart3, path: "/rapports" },
   { label: "Notifications", icon: Bell, path: "/notifications" },
   { label: "Paramètres", icon: Settings, path: "/parametres" },
+  { type: "separator", label: "CRM" },
+  { label: "CRM Dashboard", icon: PieChart, path: "/crm" },
+  { label: "Leads", icon: UserPlus, path: "/crm/leads" },
+  { label: "Pipeline", icon: Briefcase, path: "/crm/pipeline" },
+  { label: "Services & Prix", icon: Package, path: "/crm/services" },
 ];
 
 const employeeMenu = [
@@ -58,12 +63,19 @@ export function ERPSidebar({ open, onToggle }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-2">
-        {menuItems.map((item) => {
+        {menuItems.map((item, idx) => {
+          if ('type' in item && item.type === "separator") {
+            return open ? (
+              <div key={`sep-${idx}`} className="pt-4 pb-1 px-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">{item.label}</p>
+              </div>
+            ) : <div key={`sep-${idx}`} className="border-t border-sidebar-border my-2" />;
+          }
           const active = location.pathname === item.path;
           return (
             <Link
               key={item.path}
-              to={item.path}
+              to={item.path!}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 active
                   ? "bg-primary text-primary-foreground"
@@ -71,7 +83,7 @@ export function ERPSidebar({ open, onToggle }: Props) {
               }`}
               title={!open ? item.label : undefined}
             >
-              <item.icon size={20} className={active ? "text-primary-foreground" : "text-primary"} />
+              {item.icon && <item.icon size={20} className={active ? "text-primary-foreground" : "text-primary"} />}
               {open && <span className="truncate">{item.label}</span>}
             </Link>
           );
