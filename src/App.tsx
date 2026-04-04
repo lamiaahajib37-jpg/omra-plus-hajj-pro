@@ -9,8 +9,9 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import RH from "./pages/RH";
-import Departements from "./pages/Departements";
+import Departements from "@/pages/departements/Departements";
 import Taches from "./pages/Taches";
+import Pointage from "./pages/Pointage";
 import Clients from "./pages/Clients";
 import Dossiers from "./pages/Dossiers";
 import DossierDetail from "./pages/DossierDetail";
@@ -36,10 +37,12 @@ function AppRoutes() {
         {/* Dashboard adapts to role */}
         <Route path="/" element={isAdmin ? <Dashboard /> : <EmployeeDashboard />} />
 
-        {/* Shared pages */}
+        {/* Shared pages — accessible by admin AND employee */}
         <Route path="/dossiers" element={<Dossiers />} />
         <Route path="/dossiers/:id" element={<DossierDetail />} />
         <Route path="/taches" element={<Taches />} />
+        <Route path="/pointage" element={<Pointage />} />
+        <Route path="/reunions" element={<Reunions />} />
         <Route path="/notifications" element={<Notifications />} />
 
         {/* Admin-only pages */}
@@ -49,7 +52,6 @@ function AppRoutes() {
             <Route path="/departements" element={<Departements />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/voyages" element={<Voyages />} />
-            <Route path="/reunions" element={<Reunions />} />
             <Route path="/objectifs" element={<Objectifs />} />
             <Route path="/finance" element={<Finance />} />
             <Route path="/rapports" element={<Rapports />} />
