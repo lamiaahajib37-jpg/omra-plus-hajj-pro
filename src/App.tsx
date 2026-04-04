@@ -22,6 +22,10 @@ import Rapports from "./pages/Rapports";
 import Notifications from "./pages/Notifications";
 import Parametres from "./pages/Parametres";
 import NotFound from "./pages/NotFound";
+import CRMDashboard from "./pages/crm/CRMDashboard";
+import CRMLeads from "./pages/crm/Leads";
+import CRMPipeline from "./pages/crm/Pipeline";
+import CRMServices from "./pages/crm/Services";
 
 const queryClient = new QueryClient();
 
@@ -33,16 +37,13 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<ERPLayout />}>
-        {/* Dashboard adapts to role */}
         <Route path="/" element={isAdmin ? <Dashboard /> : <EmployeeDashboard />} />
 
-        {/* Shared pages */}
         <Route path="/dossiers" element={<Dossiers />} />
         <Route path="/dossiers/:id" element={<DossierDetail />} />
         <Route path="/taches" element={<Taches />} />
         <Route path="/notifications" element={<Notifications />} />
 
-        {/* Admin-only pages */}
         {isAdmin && (
           <>
             <Route path="/rh" element={<RH />} />
@@ -54,10 +55,13 @@ function AppRoutes() {
             <Route path="/finance" element={<Finance />} />
             <Route path="/rapports" element={<Rapports />} />
             <Route path="/parametres" element={<Parametres />} />
+            <Route path="/crm" element={<CRMDashboard />} />
+            <Route path="/crm/leads" element={<CRMLeads />} />
+            <Route path="/crm/pipeline" element={<CRMPipeline />} />
+            <Route path="/crm/services" element={<CRMServices />} />
           </>
         )}
 
-        {/* Redirect unknown to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
