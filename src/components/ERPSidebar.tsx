@@ -21,6 +21,11 @@ const adminMenu = [
   { label: "Rapports & Statistiques", icon: BarChart3, path: "/rapports" },
   { label: "Notifications", icon: Bell, path: "/notifications" },
   { label: "Paramètres", icon: Settings, path: "/parametres" },
+  { type: "separator", label: "CRM" },
+  { label: "CRM Dashboard", icon: PieChart, path: "/crm" },
+  { label: "Leads", icon: UserPlus, path: "/crm/leads" },
+  { label: "Pipeline", icon: Briefcase, path: "/crm/pipeline" },
+  { label: "Services & Prix", icon: Package, path: "/crm/services" },
 ];
 
 const employeeMenu = [
