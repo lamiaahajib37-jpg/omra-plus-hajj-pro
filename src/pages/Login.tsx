@@ -105,11 +105,8 @@ export default function Login() {
       <div className="flex flex-col flex-1 lg:hidden">
 
         {/* ── Hero rouge ── */}
-<div
-  className="relative bg-primary overflow-hidden px-7 pb-12"
-  style={{ paddingTop: 'calc(env(safe-area-inset-top) + 52px)', minHeight: '42vh' }}
->
-            {/* Cercles décoratifs */}
+        <div className="relative bg-primary overflow-hidden px-7 pt-14 pb-10">
+          {/* Cercles décoratifs */}
           {[
             { size: 220, right: -70, top: -70 },
             { size: 140, right: -30, top: 20 },
@@ -164,7 +161,7 @@ export default function Login() {
         </div>
 
         {/* ── Carte blanche (overlap) ── */}
-<div className="-mt-5 rounded-t-[28px] bg-card flex-1 px-7 pt-8 pb-12 shadow-sm overflow-y-auto">
+        <div className="-mt-4 rounded-t-[28px] bg-card flex-1 px-7 pt-8 pb-12 shadow-sm">
 
           <h2 className="text-[22px] font-bold text-foreground mb-1">Connexion</h2>
           <p className="text-[13px] text-muted-foreground mb-6">Accédez à votre espace de travail</p>
