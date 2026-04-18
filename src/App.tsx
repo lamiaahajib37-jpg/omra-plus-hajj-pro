@@ -10,6 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ERPLayout } from "@/components/ERPLayout";
 
+import { Show, SignInButton, UserButton, useUser } from "@clerk/react"; //
 // ── Pages ERP ─────────────────────────────────────────────────────────
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -153,15 +154,64 @@ function AppRouter() {
   );
 }
 
+// 1. Ce Wrapper vérifie si l'utilisateur est autorisé à accéder au système
+const ClerkAuthWrapper = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
+
+  // Liste des e-mails autorisés à voir la démo actuellement
+  const allowedEmails = ["lamyaahajib98@gmail.com"]; 
+
+  return (
+    <>
+      {/* État 1 : Non connecté */}
+      <Show when="signed-out">
+        <div className="flex flex-col items-center justify-center h-screen bg-slate-50 text-center p-4">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Accès Morocco ERP</h1>
+          <SignInButton mode="modal">
+            <button className="bg-[#E11D48] text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:scale-105 transition-transform">
+              Se connecter pour l'aperçu
+            </button>
+          </SignInButton>
+        </div>
+      </Show>
+
+      {/* État 2 : Connecté */}
+      <Show when="signed-in">
+        {email && allowedEmails.includes(email) ? (
+          <div className="relative">
+            {/* Le bouton de profil Clerk reste visible pour faciliter la déconnexion */}
+            <div className="fixed bottom-4 right-4 z-[9999]">
+              <UserButton afterSignOutUrl="/" />
+            </div>
+            {children}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-screen bg-white text-center p-6">
+            <div className="text-6xl mb-4">⏳</div>
+            <h2 className="text-2xl font-bold">Demande d'accès en cours de révision</h2>
+            <p className="text-gray-600 mt-2">
+              Votre compte <strong>({email})</strong> n'est pas encore activé pour la démo. 
+              Veuillez contacter l'administration pour obtenir l'accès.
+            </p>
+          </div>
+        )}
+      </Show>
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AuthProvider>
-          <AppRouter />
-        </AuthProvider>
+        <ClerkAuthWrapper> {/* Protection globale du système avec Clerk */}
+          <AuthProvider>
+            <AppRouter />
+          </AuthProvider>
+        </ClerkAuthWrapper>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
