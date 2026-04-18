@@ -120,6 +120,8 @@ function ClientRoutes() {
   const { user, isClient } = useAuth();
 
   return (
+
+    
     <Routes>
       {/* /client → login */}
       <Route path="/" element={
@@ -144,6 +146,8 @@ function ClientRoutes() {
 // ─── Root Router ──────────────────────────────────────────────────────
 function AppRouter() {
   return (
+
+    
     <Routes>
       {/* /client/* → espace client isolé */}
       <Route path="/client/*" element={<ClientRoutes />} />
