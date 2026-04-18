@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-
+import logoAccess from "@/assets/Access_.png";
 export default function ClientLogin() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
@@ -56,8 +56,8 @@ export default function ClientLogin() {
       {/* ── Header minimal ── */}
       <header className="border-b border-border/50 bg-card px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/src/assets/Access_.png" alt="Access Morocco" className="h-8 w-auto" />
-          <span className="text-sm font-semibold text-foreground hidden sm:block">Espace Client</span>
+<img src={logoAccess} alt="Access Morocco" className="h-8 w-auto" />
+            <span className="text-sm font-semibold text-foreground hidden sm:block">Espace Client</span>
         </div>
         <a href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
           Espace équipe →

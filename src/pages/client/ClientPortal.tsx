@@ -22,7 +22,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-
+import logoAccess from "@/assets/Access_.png";
 // ─── Mock data dossier client ────────────────────────────────────────────────
 const DOSSIER = {
   reference: "DOS012",
@@ -255,7 +255,7 @@ export default function ClientPortal() {
       <header className="bg-card border-b border-border/50 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src="/src/assets/access_.png" alt="Access Morocco" className="h-8 w-auto" />
+<img src={logoAccess} alt="Access Morocco" className="h-8 w-auto" />
             <div className="hidden sm:block border-l border-border/50 pl-3">
               <p className="text-xs text-muted-foreground">Espace Client</p>
               <p className="text-xs font-semibold text-foreground">{DOSSIER.reference} — {DOSSIER.titre.split("—")[0].trim()}</p>
