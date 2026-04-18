@@ -13,7 +13,7 @@ import {
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import NewClientModal from "./NewClientModal";
+import NewClientModal from "./Newclientmodal";
 
 // ── Types ──────────────────────────────────────────────────────────────
 export interface Client {
