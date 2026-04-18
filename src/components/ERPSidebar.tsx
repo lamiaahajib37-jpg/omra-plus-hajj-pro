@@ -9,7 +9,7 @@ import {
   Briefcase, Plane, RefreshCw, Kanban, UserCheck,CalendarOff
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
+import logoAccess from "@/assets/Access_.png";
 const SEP = (label: string) => ({ type: "separator" as const, label, path: undefined, icon: undefined });
 
 // ── Admin: accès complet ──────────────────────────────────────────────
@@ -93,7 +93,7 @@ export function ERPSidebar({ open, onToggle }: Props) {
       <div className="h-16 flex items-center justify-between px-3 border-b border-sidebar-border">
         {open && (
           <div className="flex items-center px-2">
-            <img src="/src/assets/access_.png" alt="Access Morocco" className="h-13 w-auto object-contain" />
+<img src={logoAccess} alt="Access Morocco" className="h-8 w-auto" />
           </div>
         )}
         <button onClick={onToggle} className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors ml-auto">
