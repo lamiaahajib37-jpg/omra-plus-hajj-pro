@@ -1,205 +1,254 @@
+// ════════════════════════════════════════════════════════════════════════
+// Pipeline.tsx  —  /pipeline
+// Entonnoir commercial — vue Admin
+// ════════════════════════════════════════════════════════════════════════
 import { useState } from "react";
-import { mockCRMDossiers, mockAgents, mockServices } from "@/data/crmMockData";
-import { CRMDossier, DossierStatus, DOSSIER_STATUS_CONFIG, DossierType } from "@/types/crm";
-import { StatCard } from "@/components/StatCard";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import { useNavigate } from "react-router-dom";
 import {
-  FolderOpen, Search, Plus, Filter, DollarSign, TrendingUp, Clock,
-  CheckCircle, XCircle, Send, FileText, ChevronRight, Calendar, User
+  TrendingUp, Users, FolderOpen, DollarSign,
+  ArrowRight, ChevronDown, ChevronUp, Eye
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function CRMPipeline() {
-  const [dossiers, setDossiers] = useState<CRMDossier[]>(mockCRMDossiers);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedDossier, setSelectedDossier] = useState<CRMDossier | null>(null);
-  const [viewMode, setViewMode] = useState<"cards" | "kanban">("cards");
+// ─── Mock data ────────────────────────────────────────────────────────────────
+const FUNNEL = [
+  { id: "leads",       label: "Leads captés",        count: 47, total: null,    color: "#185FA5", bg: "#E6F1FB",  pct: 100 },
+  { id: "contactes",   label: "Contactés",            count: 38, total: null,    color: "#0F6E56", bg: "#E1F5EE",  pct: 81 },
+  { id: "interesse",   label: "Intéressés",           count: 22, total: null,    color: "#633806", bg: "#FAEEDA",  pct: 47 },
+  { id: "promis",      label: "Promis / Accord",      count: 11, total: null,    color: "#3C3489", bg: "#EEEDFE",  pct: 23 },
+  { id: "convertis",   label: "Convertis (clients)",  count: 7,  total: null,    color: "#27500A", bg: "#EAF3DE",  pct: 15 },
+  { id: "dossiers",    label: "Dossiers ouverts",     count: 14, total: null,    color: "#712B13", bg: "#FAECE7",  pct: 30 },
+  { id: "ca",          label: "CA généré",            count: null, total: 487000, color: "#791F1F", bg: "#FCEBEB", pct: null },
+];
 
-  const filtered = dossiers.filter(d => {
-    const matchSearch = d.clientName.toLowerCase().includes(search.toLowerCase()) || d.reference.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || d.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+interface DeptStat {
+  dept: string;
+  leads: number;
+  dossiers: number;
+  ca: number;
+  tauxConv: number;
+}
 
-  const totalBudget = dossiers.reduce((s, d) => s + d.budget, 0);
-  const confirmed = dossiers.filter(d => d.status === "confirmed");
-  const confirmedRevenue = confirmed.reduce((s, d) => {
-    const lastPres = d.presentations[d.presentations.length - 1];
-    return s + (lastPres?.totalSelling || 0);
-  }, 0);
+const DEPT_STATS: DeptStat[] = [
+  { dept: "MICE",       leads: 12, dossiers: 5,  ca: 185000, tauxConv: 42 },
+  { dept: "Leisure",    leads: 15, dossiers: 4,  ca: 68000,  tauxConv: 27 },
+  { dept: "Hajj & Omra",leads: 14, dossiers: 3,  ca: 42000,  tauxConv: 21 },
+  { dept: "Outbound",   leads: 6,  dossiers: 2,  ca: 192000, tauxConv: 33 },
+];
 
-  const handleStatusChange = (id: string, status: DossierStatus) => {
-    setDossiers(prev => prev.map(d => d.id === id ? { ...d, status } : d));
-    if (selectedDossier?.id === id) setSelectedDossier(prev => prev ? { ...prev, status } : null);
-  };
+const AGENT_PERF = [
+  { nom: "Feras",  leads: 24, convertis: 4, ca: 248000, tauxConv: 17 },
+  { nom: "Adam",   leads: 23, convertis: 3, ca: 239000, tauxConv: 13 },
+];
 
-  const statuses: DossierStatus[] = ["new", "assigned", "in_progress", "waiting_client", "confirmed", "lost"];
+const MONTHLY = [
+  { mois: "Jan", leads: 6, dossiers: 2, ca: 38000 },
+  { mois: "Fév", leads: 8, dossiers: 3, ca: 54000 },
+  { mois: "Mar", leads: 11, dossiers: 4, ca: 87000 },
+  { mois: "Avr", leads: 14, dossiers: 5, ca: 102000 },
+  { mois: "Mai", leads: 8, dossiers: 0, ca: 0 },
+];
+
+const maxCA = Math.max(...MONTHLY.map(m => m.ca));
+
+// ─── Funnel Bar ───────────────────────────────────────────────────────────────
+function FunnelBar({ stage, isLast }: { stage: typeof FUNNEL[0]; isLast: boolean }) {
+  const width = stage.pct ? `${Math.max(stage.pct, 15)}%` : "100%";
 
   return (
-    <div className="space-y-6">
+    <div className="flex items-center gap-4">
+      {/* Bar */}
+      <div className="flex-1 relative">
+        <div
+          className="rounded-lg h-12 flex items-center px-4 transition-all"
+          style={{ width, background: stage.bg, border: `1px solid ${stage.color}22` }}
+        >
+          <span className="text-sm font-medium truncate" style={{ color: stage.color }}>
+            {stage.label}
+          </span>
+        </div>
+      </div>
+      {/* Value */}
+      <div className="w-32 text-right">
+        {stage.count !== null ? (
+          <span className="text-xl font-bold text-foreground">{stage.count}</span>
+        ) : (
+          <span className="text-xl font-bold text-foreground">${(stage.total! / 1000).toFixed(0)}K</span>
+        )}
+        {stage.pct && (
+          <span className="text-xs text-muted-foreground ml-2">{stage.pct}%</span>
+        )}
+      </div>
+      {/* Arrow to next */}
+      {!isLast && (
+        <div className="absolute left-0 right-0 flex justify-start pl-4">
+          <span className="text-muted-foreground text-xs"></span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+export default function Pipeline() {
+  const navigate = useNavigate();
+  const [periode, setPeriode] = useState("2026");
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Pipeline Commercial</h1>
-          <p className="text-muted-foreground">Suivi des dossiers et propositions commerciales</p>
+          <h1 className="text-2xl font-semibold text-foreground">Pipeline Commercial</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Entonnoir de conversion — Access Morocco</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant={viewMode === "cards" ? "default" : "outline"} size="sm" onClick={() => setViewMode("cards")}>Cartes</Button>
-          <Button variant={viewMode === "kanban" ? "default" : "outline"} size="sm" onClick={() => setViewMode("kanban")}>Kanban</Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard title="Total Dossiers" value={dossiers.length} icon={FolderOpen} />
-        <StatCard title="Budget Total" value={`${(totalBudget / 1000).toFixed(0)}K MAD`} icon={DollarSign} change="+15% vs mois dernier" changeType="up" />
-        <StatCard title="Confirmés" value={confirmed.length} icon={CheckCircle} change={`${confirmedRevenue.toLocaleString()} MAD CA`} changeType="up" />
-        <StatCard title="Taux conversion" value={`${dossiers.length ? Math.round(confirmed.length / dossiers.length * 100) : 0}%`} icon={TrendingUp} />
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Rechercher dossier..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px]"><Filter size={14} className="mr-2" /><SelectValue /></SelectTrigger>
+        <Select value={periode} onValueChange={setPeriode}>
+          <SelectTrigger className="w-32 h-9"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            {Object.entries(DOSSIER_STATUS_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+            <SelectItem value="2026">2026</SelectItem>
+            <SelectItem value="q1">Q1 2026</SelectItem>
+            <SelectItem value="q2">Q2 2026</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {viewMode === "kanban" ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {statuses.map(status => (
-            <div key={status} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Badge className={`${DOSSIER_STATUS_CONFIG[status].color} border-0 text-xs`}>{DOSSIER_STATUS_CONFIG[status].label}</Badge>
-                <span className="text-xs text-muted-foreground">{dossiers.filter(d => d.status === status).length}</span>
-              </div>
-              {dossiers.filter(d => d.status === status).map(d => (
-                <div key={d.id} onClick={() => setSelectedDossier(d)} className="bg-card border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow">
-                  <p className="font-medium text-xs text-card-foreground truncate">{d.clientName}</p>
-                  <p className="text-xs text-muted-foreground">{d.reference}</p>
-                  <p className="text-xs text-primary font-medium mt-1">{d.budget.toLocaleString()} MAD</p>
+      {/* Top KPIs */}
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { label: "Total leads",      value: "47",     sub: "+12 ce mois",   icon: <Users size={15} />,      color: "text-primary" },
+          { label: "Taux conversion",  value: "14.9%",  sub: "leads → clients",icon: <TrendingUp size={15}/>,  color: "text-green-600" },
+          { label: "Dossiers actifs",  value: "14",     sub: "en cours",       icon: <FolderOpen size={15} />, color: "text-amber-600" },
+          { label: "CA total",         value: "$487K",  sub: "YTD 2026",       icon: <DollarSign size={15} />, color: "text-foreground" },
+        ].map(k => (
+          <div key={k.label} className="bg-background border border-border/50 rounded-xl p-4">
+            <div className={`flex items-center gap-1.5 mb-2 ${k.color}`}>{k.icon}<span className="text-xs text-muted-foreground">{k.label}</span></div>
+            <p className="text-2xl font-bold text-foreground">{k.value}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{k.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-5 gap-5">
+        {/* Entonnoir */}
+        <div className="col-span-3 bg-background border border-border/50 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Entonnoir de conversion</h2>
+          <div className="space-y-2">
+            {FUNNEL.map((stage, i) => (
+              <FunnelBar key={stage.id} stage={stage} isLast={i === FUNNEL.length - 1} />
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground mt-4">
+            Taux de conversion global: <strong>14.9%</strong> (leads → clients confirmés)
+          </p>
+        </div>
+
+        {/* Droite: dept + agents */}
+        <div className="col-span-2 space-y-4">
+          {/* Par département */}
+          <div className="bg-background border border-border/50 rounded-xl p-4">
+            <h2 className="text-sm font-semibold text-foreground mb-3">Par département</h2>
+            <div className="space-y-2">
+              {DEPT_STATS.map(d => (
+                <div key={d.dept} className="flex items-center justify-between py-1.5 border-b border-border/20 last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{d.dept}</p>
+                    <p className="text-xs text-muted-foreground">{d.leads} leads · {d.dossiers} dossiers</p>
+                  </div>
+                  <div className="text-right ml-3">
+                    <p className="text-sm font-semibold text-foreground">${(d.ca / 1000).toFixed(0)}K</p>
+                    <p className="text-xs text-muted-foreground">{d.tauxConv}% conv.</p>
+                  </div>
                 </div>
               ))}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-3">
-            {filtered.map(d => (
-              <div key={d.id} onClick={() => setSelectedDossier(d)}
-                className={`bg-card border rounded-xl p-4 cursor-pointer transition-all hover:shadow-md ${selectedDossier?.id === d.id ? "ring-2 ring-primary" : ""}`}>
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-card-foreground">{d.reference}</h3>
-                      <Badge variant="outline" className="text-xs">{d.department}</Badge>
-                      <Badge variant="outline" className="text-xs">{d.type}</Badge>
+          </div>
+
+          {/* Performance agents */}
+          <div className="bg-background border border-border/50 rounded-xl p-4">
+            <h2 className="text-sm font-semibold text-foreground mb-3">Performance agents</h2>
+            {AGENT_PERF.map(a => (
+              <div key={a.nom} className="mb-3 last:mb-0">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                      {a.nom[0]}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">{d.clientName} {d.clientCompany ? `— ${d.clientCompany}` : ""}</p>
+                    <span className="text-sm font-medium text-foreground">{a.nom}</span>
                   </div>
-                  <Badge className={`${DOSSIER_STATUS_CONFIG[d.status].color} border-0 text-xs`}>{DOSSIER_STATUS_CONFIG[d.status].label}</Badge>
+                  <span className="text-xs text-muted-foreground">{a.tauxConv}% conv.</span>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
-                  <span className="flex items-center gap-1"><DollarSign size={12} />{d.budget.toLocaleString()} MAD</span>
-                  <span className="flex items-center gap-1"><Calendar size={12} />{d.dateStart} → {d.dateEnd}</span>
-                  <span className="flex items-center gap-1"><User size={12} />{d.assignedToName || "Non assigné"}</span>
-                  <span className="flex items-center gap-1"><FileText size={12} />{d.presentations.length} présentation(s)</span>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
+                  <span>{a.leads} leads</span>
+                  <ArrowRight size={10} />
+                  <span>{a.convertis} clients</span>
+                  <span className="ml-auto font-medium text-foreground">${(a.ca / 1000).toFixed(0)}K</span>
+                </div>
+                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full" style={{ width: `${a.tauxConv * 3}%` }} />
                 </div>
               </div>
             ))}
           </div>
-
-          {/* Detail Panel */}
-          <div className="lg:col-span-1">
-            {selectedDossier ? (
-              <div className="bg-card border rounded-xl p-5 sticky top-6 space-y-4">
-                <div>
-                  <h3 className="font-bold text-lg text-card-foreground">{selectedDossier.reference}</h3>
-                  <p className="text-sm text-muted-foreground">{selectedDossier.clientName}</p>
-                </div>
-                <Badge className={`${DOSSIER_STATUS_CONFIG[selectedDossier.status].color} border-0`}>
-                  {DOSSIER_STATUS_CONFIG[selectedDossier.status].label}
-                </Badge>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Budget</span><span className="font-medium">{selectedDossier.budget.toLocaleString()} MAD</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Département</span><span className="font-medium">{selectedDossier.department}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Type</span><span className="font-medium">{selectedDossier.type}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Dates</span><span className="font-medium">{selectedDossier.dateStart} → {selectedDossier.dateEnd}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Assigné à</span><span className="font-medium">{selectedDossier.assignedToName || "—"}</span></div>
-                </div>
-
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">Statut</Label>
-                  <Select value={selectedDossier.status} onValueChange={v => handleStatusChange(selectedDossier.id, v as DossierStatus)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{Object.entries(DOSSIER_STATUS_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-
-                {/* Presentations */}
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">Présentations</h4>
-                  {selectedDossier.presentations.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedDossier.presentations.map(p => (
-                        <div key={p.id} className="bg-secondary/50 rounded-lg p-3 text-xs">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-medium">Version {p.version}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {p.status === "sent" ? "Envoyée" : p.status === "accepted" ? "Acceptée" : p.status === "rejected" ? "Rejetée" : "Brouillon"}
-                            </Badge>
-                          </div>
-                          <div className="flex justify-between text-muted-foreground">
-                            <span>Coût: {p.totalCost.toLocaleString()}</span>
-                            <span>Vente: {p.totalSelling.toLocaleString()}</span>
-                            <span className="text-primary font-medium">Marge: {p.margin.toLocaleString()}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : <p className="text-xs text-muted-foreground">Aucune présentation</p>}
-                </div>
-
-                {/* Timeline */}
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">Activité</h4>
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                    {[...selectedDossier.activities].reverse().map(act => (
-                      <div key={act.id} className="flex gap-2 text-xs border-l-2 border-primary/30 pl-3 py-1">
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {act.type === "call" ? "📞" : act.type === "email" ? "✉️" : act.type === "status_change" ? "🔄" : "📝"} {act.description}
-                          </p>
-                          <p className="text-muted-foreground">{act.date} — {act.by}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-card border rounded-xl p-8 text-center text-muted-foreground">
-                <FolderOpen size={40} className="mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Sélectionnez un dossier</p>
-              </div>
-            )}
-          </div>
         </div>
-      )}
+      </div>
+
+      {/* Monthly chart */}
+      <div className="bg-background border border-border/50 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Évolution mensuelle</h2>
+        <div className="flex items-end gap-6 h-40">
+          {MONTHLY.map(m => (
+            <div key={m.mois} className="flex-1 flex flex-col items-center gap-2">
+              {/* CA bar */}
+              <div className="w-full flex flex-col items-center justify-end" style={{ height: "100px" }}>
+                <div
+                  className="w-full rounded-t-md transition-all"
+                  style={{
+                    height: m.ca > 0 ? `${Math.max(Math.round((m.ca / maxCA) * 90), 4)}px` : "4px",
+                    background: m.ca > 0 ? "#185FA5" : "#E6F1FB",
+                  }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">{m.mois}</span>
+              <span className="text-xs font-medium text-foreground">
+                {m.ca > 0 ? `$${(m.ca / 1000).toFixed(0)}K` : "—"}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-6 mt-3 text-xs text-muted-foreground border-t border-border/30 pt-3">
+          {MONTHLY.map(m => (
+            <div key={m.mois} className="flex-1 text-center">
+              <p>{m.leads} leads</p>
+              <p>{m.dossiers > 0 ? `${m.dossiers} doss.` : "—"}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="flex gap-3">
+        <button
+          onClick={() => navigate("/leads")}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border/50 text-sm hover:bg-secondary transition-colors"
+        >
+          <Users size={14} className="text-primary" />
+          Voir tous les leads
+        </button>
+        <button
+          onClick={() => navigate("/clients")}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border/50 text-sm hover:bg-secondary transition-colors"
+        >
+          <FolderOpen size={14} className="text-primary" />
+          Voir tous les clients
+        </button>
+        <button
+          onClick={() => navigate("/rapports")}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border/50 text-sm hover:bg-secondary transition-colors"
+        >
+          <TrendingUp size={14} className="text-primary" />
+          Rapports détaillés
+        </button>
+      </div>
     </div>
   );
 }
