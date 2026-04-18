@@ -71,10 +71,9 @@ const employeeMenu = [
   { label: "Notifications",           icon: Bell,            path: "/notifications" },
 ];
 
-interface Props { open: boolean; onToggle: () => void; }
-
-export function ERPSidebar({ open, onToggle }: Props) {
-  const location = useLocation();
+interface Props { open: boolean; onToggle: () => void; isMobile?: boolean; }
+export function ERPSidebar({ open, onToggle, isMobile = false }: Props) {
+    const location = useLocation();
   const { user, isAdmin, isManager, logout } = useAuth();
 
   const menuItems = isAdmin
@@ -88,7 +87,12 @@ export function ERPSidebar({ open, onToggle }: Props) {
   const roleBadgeBg = isAdmin ? "bg-primary/20 text-primary" : isManager ? "bg-amber-100 text-amber-700" : "bg-secondary text-muted-foreground";
 
   return (
-    <aside className={`bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 ${open ? "w-64" : "w-16"} shrink-0`}>
+    <aside className={[
+  "bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300",
+  isMobile
+    ? `fixed left-0 top-0 h-full z-30 w-64 ${open ? "translate-x-0" : "-translate-x-full"}`
+    : `${open ? "w-64" : "w-16"} shrink-0`
+].join(" ")}>
       {/* Logo */}
       <div className="h-16 flex items-center justify-between px-3 border-b border-sidebar-border">
         {open && (

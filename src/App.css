@@ -1,5 +1,36 @@
 
+.dark {
+  --background: 222 20% 10%;
+  --foreground: 220 14% 90%;
 
+  --card: 222 20% 13%;
+  --card-foreground: 220 14% 90%;
+
+  --popover: 222 20% 13%;
+  --popover-foreground: 220 14% 90%;
+
+  --primary: 354 85% 55%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 354 85% 15%;
+  --secondary-foreground: 354 85% 70%;
+
+  --muted: 222 20% 18%;
+  --muted-foreground: 220 10% 55%;
+
+  --accent: 354 85% 15%;
+  --accent-foreground: 354 85% 70%;
+
+  --border: 222 20% 20%;
+  --input: 222 20% 20%;
+  --ring: 354 85% 55%;
+
+  --sidebar-background: 222 22% 8%;
+  --sidebar-foreground: 220 14% 75%;
+  --sidebar-accent: 222 22% 14%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 222 22% 15%;
+}
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
