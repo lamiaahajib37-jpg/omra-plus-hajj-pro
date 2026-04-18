@@ -93,7 +93,7 @@ export function ERPSidebar({ open, onToggle }: Props) {
       <div className="h-16 flex items-center justify-between px-3 border-b border-sidebar-border">
         {open && (
           <div className="flex items-center px-2">
-            <img src="/src/assets/Access_.png" alt="Access Morocco" className="h-13 w-auto object-contain" />
+            <img src="/src/assets/access_.png" alt="Access Morocco" className="h-13 w-auto object-contain" />
           </div>
         )}
         <button onClick={onToggle} className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors ml-auto">
