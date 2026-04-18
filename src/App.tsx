@@ -154,20 +154,23 @@ function AppRouter() {
   );
 }
 
-// 1. Ce Wrapper vérifie si l'utilisateur est autorisé à accéder au système
+// 1. Ce Wrapper vérifie l'autorisation via les métadonnées de Clerk (Public Metadata)
 const ClerkAuthWrapper = ({ children }: { children: React.ReactNode }) => {
   const { user } = useUser();
   const email = user?.primaryEmailAddress?.emailAddress;
 
-  // Liste des e-mails autorisés à voir la démo actuellement
-  const allowedEmails = ["lamyaahajib98@gmail.com"]; 
+  // Vérification de l'approbation via la métadonnée "approved"
+  const isApproved = user?.publicMetadata?.approved === true;
+
+  // Ton e-mail reste administrateur par défaut
+  const isAdminEmail = email === "lamyaahajib98@gmail.com";
 
   return (
     <>
       {/* État 1 : Non connecté */}
       <Show when="signed-out">
         <div className="flex flex-col items-center justify-center h-screen bg-slate-50 text-center p-4">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Accès Morocco ERP</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Access Morocco ERP</h1>
           <SignInButton mode="modal">
             <button className="bg-[#E11D48] text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:scale-105 transition-transform">
               Se connecter pour l'aperçu
@@ -178,21 +181,22 @@ const ClerkAuthWrapper = ({ children }: { children: React.ReactNode }) => {
 
       {/* État 2 : Connecté */}
       <Show when="signed-in">
-        {email && allowedEmails.includes(email) ? (
+        {(isApproved || isAdminEmail) ? (
           <div className="relative">
-            {/* Le bouton de profil Clerk reste visible pour faciliter la déconnexion */}
+            {/* Bouton profil Clerk en bas à droite */}
             <div className="fixed bottom-4 right-4 z-[9999]">
               <UserButton afterSignOutUrl="/" />
             </div>
             {children}
           </div>
         ) : (
+          /* État : En attente d'approbation */
           <div className="flex flex-col items-center justify-center h-screen bg-white text-center p-6">
             <div className="text-6xl mb-4">⏳</div>
-            <h2 className="text-2xl font-bold">Demande d'accès en cours de révision</h2>
-            <p className="text-gray-600 mt-2">
-              Votre compte <strong>({email})</strong> n'est pas encore activé pour la démo. 
-              Veuillez contacter l'administration pour obtenir l'accès.
+            <h2 className="text-2xl font-bold text-gray-800">Accès restreint</h2>
+            <p className="text-gray-600 mt-2 max-w-md">
+              Votre compte <strong>({email})</strong> est en attente d'activation. 
+              Veuillez contacter <strong>Lamiaa Hajib</strong> pour valider votre accès à la démo.
             </p>
           </div>
         )}
@@ -207,7 +211,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <ClerkAuthWrapper> {/* Protection globale du système avec Clerk */}
+        <ClerkAuthWrapper>
           <AuthProvider>
             <AppRouter />
           </AuthProvider>
