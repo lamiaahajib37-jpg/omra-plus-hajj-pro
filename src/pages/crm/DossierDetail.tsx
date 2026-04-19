@@ -3,16 +3,16 @@ import { useState } from "react";
 import {
   ArrowLeft, FolderOpen, Users, Calendar, MapPin, FileText,
   DollarSign, MessageSquare, Paperclip, Plus,
-  CheckCircle2, Clock,
+  CheckCircle2, Clock, User, Eye,
 } from "lucide-react";
 import { mockDossiers, DEPARTEMENTS_LABELS } from "@/data/crmData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// ─── Same extra dossiers as in Dossiers.tsx ───────────────────────────────────
-// Doit être identique à YOUSSEF_DOSSIERS dans Dossiers.tsx
+// ─── Mock dossiers (identique à Dossiers.tsx) ────────────────────────────────
 const YOUSSEF_DOSSIERS = [
   {
     id: "YE-001",
@@ -28,10 +28,16 @@ const YOUSSEF_DOSSIERS = [
     managerNom: "Admin Manager",
     employeNom: "Youssef El Amrani",
     presentations: [
-      { version: 1, dateCreation: "2026-03-10", totalHT: 26000, valideParClient: false, notes: "Première proposition", commentaireClient: "Peut-on réviser le prix du vol ?" },
+      {
+        version: 1, dateCreation: "2026-03-10", totalHT: 26000,
+        valideParClient: false, notes: "Première proposition",
+        commentaireClient: "Peut-on réviser le prix du vol ?",
+        employeNom: "Youssef El Amrani",
+        documents: [],
+      },
     ],
     paiements: [
-      { id: "P1", montant: 8000, mode: "virement", reference: "VIR-2026-001", note: "1er acompte", date: "2026-03-12", valide: true },
+      { id: "P1", montant: 8000, mode: "virement", reference: "VIR-2026-001", note: "1er acompte", date: "2026-03-12", valide: true, employeNom: "Youssef El Amrani" },
     ],
     commentaires: [
       { auteur: "Youssef El Amrani", texte: "Dossier ouvert — en attente confirmation visa.", date: "2026-03-10" },
@@ -54,10 +60,18 @@ const YOUSSEF_DOSSIERS = [
     managerNom: "Admin Manager",
     employeNom: "Youssef El Amrani",
     presentations: [
-      { version: 1, dateCreation: "2026-02-20", totalHT: 9500, valideParClient: true, notes: "Voyage de noces" },
+      {
+        version: 1, dateCreation: "2026-02-20", totalHT: 9500,
+        valideParClient: true, notes: "Voyage de noces",
+        employeNom: "Youssef El Amrani",
+        documents: [
+          { nom: "Proposition_Istanbul_V1.xlsx", type: "excel", date: "2026-02-20" },
+          { nom: "Programme_Voyage_Noces.pptx", type: "powerpoint", date: "2026-02-20" },
+        ],
+      },
     ],
     paiements: [
-      { id: "P2", montant: 9500, mode: "carte", note: "Paiement intégral", date: "2026-02-22", valide: true },
+      { id: "P2", montant: 9500, mode: "carte", note: "Paiement intégral", date: "2026-02-22", valide: true, employeNom: "Youssef El Amrani" },
     ],
     commentaires: [
       { auteur: "Youssef El Amrani", texte: "Paiement complet reçu. Billets confirmés.", date: "2026-02-22" },
@@ -84,7 +98,7 @@ const YOUSSEF_DOSSIERS = [
     employeNom: "Youssef El Amrani",
     presentations: [],
     paiements: [
-      { id: "P3", montant: 15000, mode: "virement", note: "Acompte initial", date: "2026-03-20", valide: true },
+      { id: "P3", montant: 15000, mode: "virement", note: "Acompte initial", date: "2026-03-20", valide: true, employeNom: "Youssef El Amrani" },
     ],
     commentaires: [],
     documents: [],
@@ -105,17 +119,20 @@ const YOUSSEF_DOSSIERS = [
     managerNom: "Admin Manager",
     employeNom: "Youssef El Amrani",
     presentations: [
-      { version: 1, dateCreation: "2026-03-25", totalHT: 18000, valideParClient: false, notes: "Devis initial Omra" },
+      {
+        version: 1, dateCreation: "2026-03-25", totalHT: 18000,
+        valideParClient: false, notes: "Devis initial Omra",
+        employeNom: "Youssef El Amrani",
+        documents: [],
+      },
     ],
     paiements: [
-      { id: "P4", montant: 5000, mode: "cheque", note: "Acompte réservation", date: "2026-03-26", valide: true },
+      { id: "P4", montant: 5000, mode: "cheque", note: "Acompte réservation", date: "2026-03-26", valide: true, employeNom: "Youssef El Amrani" },
     ],
     commentaires: [
       { auteur: "Youssef El Amrani", texte: "Visa en cours de traitement — priorité haute.", date: "2026-03-26" },
     ],
-    documents: [
-      { nom: "Demande_Visa_Omra.pdf", date: "2026-03-27" },
-    ],
+    documents: [{ nom: "Demande_Visa_Omra.pdf", date: "2026-03-27" }],
     assigneA: "Youssef",
     notes: "Départ urgent — prioriser les visas",
   },
@@ -133,11 +150,25 @@ const YOUSSEF_DOSSIERS = [
     managerNom: "Admin Manager",
     employeNom: "Youssef El Amrani",
     presentations: [
-      { version: 1, dateCreation: "2026-03-01", totalHT: 180000, valideParClient: false, notes: "Gala dinner + activités" },
-      { version: 2, dateCreation: "2026-03-15", totalHT: 185000, valideParClient: false, notes: "Version révisée avec Agafay", commentaireClient: "Programme Agafay approuvé, attente signature." },
+      {
+        version: 1, dateCreation: "2026-03-01", totalHT: 180000,
+        valideParClient: false, notes: "Gala dinner + activités",
+        employeNom: "Youssef El Amrani",
+        documents: [{ nom: "Costing_MICE_V1.xlsx", type: "excel", date: "2026-03-01" }],
+      },
+      {
+        version: 2, dateCreation: "2026-03-15", totalHT: 185000,
+        valideParClient: false, notes: "Version révisée avec Agafay",
+        commentaireClient: "Programme Agafay approuvé, attente signature.",
+        employeNom: "Youssef El Amrani",
+        documents: [
+          { nom: "Costing_MICE_V2.xlsx", type: "excel", date: "2026-03-15" },
+          { nom: "Presentation_Client_V2.pptx", type: "powerpoint", date: "2026-03-15" },
+        ],
+      },
     ],
     paiements: [
-      { id: "P5", montant: 60000, mode: "virement", reference: "VIR-2026-089", note: "1er acompte corporate", date: "2026-03-18", valide: true },
+      { id: "P5", montant: 60000, mode: "virement", reference: "VIR-2026-089", note: "1er acompte corporate", date: "2026-03-18", valide: true, employeNom: "Youssef El Amrani" },
     ],
     commentaires: [
       { auteur: "Youssef El Amrani", texte: "Réunion client prévue le 12 avril pour finalisation.", date: "2026-03-20" },
@@ -152,16 +183,18 @@ const YOUSSEF_DOSSIERS = [
   },
 ];
 
-// Merged source — same as Dossiers.tsx
 const ALL_DOSSIERS = [...(mockDossiers as any[]), ...YOUSSEF_DOSSIERS];
 
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
+// ─── Current user context (in real app, from auth context) ───────────────────
+// role: "admin" | "employe"
+const CURRENT_USER = { nom: "Admin Manager", role: "admin" };
+
 const tabs = [
-  { id: "apercu",         label: "Aperçu",         icon: FolderOpen },
-  { id: "presentations",  label: "Présentations",   icon: FileText },
-  { id: "paiements",      label: "Paiements",       icon: DollarSign },
-  { id: "commentaires",   label: "Commentaires",    icon: MessageSquare },
-  { id: "documents",      label: "Documents",       icon: Paperclip },
+  { id: "apercu",        label: "Aperçu",       icon: FolderOpen },
+  { id: "presentations", label: "Présentations", icon: FileText },
+  { id: "paiements",     label: "Paiements",     icon: DollarSign },
+  { id: "commentaires",  label: "Commentaires",  icon: MessageSquare },
+  { id: "documents",     label: "Documents",     icon: Paperclip },
 ];
 
 const STATUT_LABELS: Record<string, string> = {
@@ -171,12 +204,16 @@ const STATUT_LABELS: Record<string, string> = {
   termine:   "Terminé",
 };
 
+const FILE_ICONS: Record<string, string> = {
+  excel: "📊",
+  powerpoint: "📑",
+  pdf: "📄",
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function DossierDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  // ← Search in ALL_DOSSIERS (not just mockDossiers)
   const dossier = ALL_DOSSIERS.find((d) => d.id === id);
 
   const [activeTab, setActiveTab] = useState("apercu");
@@ -184,6 +221,17 @@ export default function DossierDetail() {
   const [comments, setComments] = useState<{ auteur: string; texte: string; date: string }[]>(
     dossier?.commentaires ?? []
   );
+
+  // Admin filter: filter presentations/paiements by employee
+  const isAdmin = CURRENT_USER.role === "admin";
+  const allEmployees = isAdmin
+    ? Array.from(new Set([
+        ...(dossier?.presentations ?? []).map((p: any) => p.employeNom).filter(Boolean),
+        ...(dossier?.paiements ?? []).map((p: any) => p.employeNom).filter(Boolean),
+        dossier?.employeNom,
+      ].filter(Boolean)))
+    : [];
+  const [filterEmploye, setFilterEmploye] = useState<string>("tous");
 
   if (!dossier) return (
     <div className="p-8 text-center text-muted-foreground">
@@ -193,17 +241,56 @@ export default function DossierDetail() {
   );
 
   const lastPresentation = dossier.presentations[dossier.presentations.length - 1];
-  const solde    = dossier.totalContrat - dossier.totalPaye;
-  const pctPaye  = dossier.totalContrat > 0 ? Math.round((dossier.totalPaye / dossier.totalContrat) * 100) : 0;
+  const solde   = dossier.totalContrat - dossier.totalPaye;
+  const pctPaye = dossier.totalContrat > 0
+    ? Math.round((dossier.totalPaye / dossier.totalContrat) * 100)
+    : 0;
+
+  // Filter presentations & paiements by selected employee (admin only)
+  const filteredPresentations = filterEmploye === "tous"
+    ? dossier.presentations
+    : dossier.presentations.filter((p: any) => p.employeNom === filterEmploye);
+
+  const filteredPaiements = filterEmploye === "tous"
+    ? dossier.paiements
+    : dossier.paiements.filter((p: any) => p.employeNom === filterEmploye);
 
   const handleSendComment = () => {
     if (!newComment.trim()) return;
     setComments(prev => [...prev, {
-      auteur: "Youssef El Amrani",
+      auteur: CURRENT_USER.nom,
       texte: newComment.trim(),
       date: new Date().toISOString(),
     }]);
     setNewComment("");
+  };
+
+  // Employee filter bar (admin only)
+  const EmployeeFilterBar = () => {
+    if (!isAdmin || allEmployees.length === 0) return null;
+    return (
+      <div className="flex items-center gap-3 px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl mb-4">
+        <User size={14} className="text-primary shrink-0" />
+        <span className="text-xs font-medium text-primary">Filtrer par employé :</span>
+        <Select value={filterEmploye} onValueChange={setFilterEmploye}>
+          <SelectTrigger className="h-7 w-52 text-xs border-primary/30">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tous">Tous les employés</SelectItem>
+            {allEmployees.map((emp: string) => (
+              <SelectItem key={emp} value={emp}>{emp}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {filterEmploye !== "tous" && (
+          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
+            <Eye size={10} className="mr-1" />
+            Vue filtrée
+          </Badge>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -225,6 +312,11 @@ export default function DossierDetail() {
             <Badge variant="outline">
               {(DEPARTEMENTS_LABELS[dossier.departement] as string) ?? dossier.departement}
             </Badge>
+            {isAdmin && (
+              <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-700 text-xs gap-1">
+                <Eye size={10} /> Vue Admin
+              </Badge>
+            )}
           </div>
           <p className="text-muted-foreground">{dossier.clientNom}</p>
         </div>
@@ -233,11 +325,11 @@ export default function DossierDetail() {
       {/* Quick stats */}
       <div className="grid grid-cols-5 gap-3">
         {[
-          { icon: MapPin,    label: "Destination",    value: dossier.destination },
-          { icon: Users,     label: "Participants",   value: `${dossier.nombrePax} pax` },
-          { icon: Calendar,  label: "Date voyage",    value: dossier.dateVoyage ? new Date(dossier.dateVoyage).toLocaleDateString("fr-FR") : "TBD" },
-          { icon: FileText,  label: "Présentations",  value: `${dossier.presentations.length} version${dossier.presentations.length > 1 ? "s" : ""}` },
-          { icon: DollarSign,label: "Total contrat",  value: `${dossier.totalContrat.toLocaleString()} $` },
+          { icon: MapPin,     label: "Destination",   value: dossier.destination },
+          { icon: Users,      label: "Participants",  value: `${dossier.nombrePax} pax` },
+          { icon: Calendar,   label: "Date voyage",   value: dossier.dateVoyage ? new Date(dossier.dateVoyage).toLocaleDateString("fr-FR") : "TBD" },
+          { icon: FileText,   label: "Présentations", value: `${dossier.presentations.length} version${dossier.presentations.length > 1 ? "s" : ""}` },
+          { icon: DollarSign, label: "Total contrat", value: `${dossier.totalContrat.toLocaleString()} $` },
         ].map((s) => (
           <Card key={s.label} className="border-border/50">
             <CardContent className="p-3">
@@ -297,17 +389,6 @@ export default function DossierDetail() {
                   </div>
                 </div>
               )}
-              {dossier.assigneA && !dossier.employeNom && (
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground text-xs font-bold">
-                    {dossier.assigneA[0]}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{dossier.assigneA}</p>
-                    <p className="text-xs text-muted-foreground">Agent responsable</p>
-                  </div>
-                </div>
-              )}
               {dossier.notes && (
                 <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-100 rounded-lg">
                   <p className="text-xs text-amber-700 italic">{dossier.notes}</p>
@@ -345,6 +426,44 @@ export default function DossierDetail() {
             </CardContent>
           </Card>
 
+          {/* Admin: résumé de toutes les versions par employé */}
+          {isAdmin && dossier.presentations.length > 0 && (
+            <Card className="border-border/50 col-span-2 bg-primary/5 border-primary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Eye size={15} className="text-primary" />
+                  Vue admin — Toutes les présentations par employé
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {dossier.presentations.map((p: any) => (
+                    <div key={p.version} className="flex items-center justify-between py-2 px-3 rounded-lg bg-background border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline">V{p.version}</Badge>
+                        <span className="text-xs text-muted-foreground">{new Date(p.dateCreation).toLocaleDateString("fr-FR")}</span>
+                        {p.employeNom && (
+                          <span className="text-xs font-medium text-primary flex items-center gap-1">
+                            <User size={10} /> {p.employeNom}
+                          </span>
+                        )}
+                        {p.valideParClient
+                          ? <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs gap-1"><CheckCircle2 size={10} /> Validée</Badge>
+                          : <Badge variant="secondary" className="text-xs gap-1"><Clock size={10} /> En attente</Badge>
+                        }
+                        {p.commentaireClient && (
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">💬 Commentaire client</Badge>
+                        )}
+                      </div>
+                      <span className="font-bold text-emerald-600">{p.totalHT.toLocaleString()} $</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Dernière présentation */}
           <Card className="border-border/50 col-span-2">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -360,9 +479,16 @@ export default function DossierDetail() {
               {lastPresentation ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Créée le {new Date(lastPresentation.dateCreation).toLocaleDateString("fr-FR")}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">
+                        Créée le {new Date(lastPresentation.dateCreation).toLocaleDateString("fr-FR")}
+                      </span>
+                      {lastPresentation.employeNom && (
+                        <span className="text-xs text-primary flex items-center gap-1">
+                          <User size={10} /> {lastPresentation.employeNom}
+                        </span>
+                      )}
+                    </div>
                     {lastPresentation.valideParClient ? (
                       <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 gap-1">
                         <CheckCircle2 size={11} /> Validée par client
@@ -379,6 +505,19 @@ export default function DossierDetail() {
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                       <p className="text-xs font-medium text-amber-700 mb-1">Commentaire client :</p>
                       <p className="text-sm text-amber-800">{lastPresentation.commentaireClient}</p>
+                    </div>
+                  )}
+                  {/* Documents joints à cette présentation */}
+                  {lastPresentation.documents?.length > 0 && (
+                    <div className="pt-2 border-t border-border/50">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Documents joints :</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {lastPresentation.documents.map((doc: any) => (
+                          <Badge key={doc.nom} variant="outline" className="text-xs gap-1">
+                            {FILE_ICONS[doc.type] ?? "📎"} {doc.nom}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -400,7 +539,10 @@ export default function DossierDetail() {
       {activeTab === "presentations" && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">{dossier.presentations.length} version{dossier.presentations.length > 1 ? "s" : ""}</p>
+            <p className="text-sm text-muted-foreground">
+              {filteredPresentations.length} version{filteredPresentations.length > 1 ? "s" : ""}
+              {filterEmploye !== "tous" && ` · ${filterEmploye}`}
+            </p>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="gap-2" onClick={() => navigate(`/dossiers/${id}/costing`)}>
                 <DollarSign size={14} /> Costing
@@ -410,22 +552,35 @@ export default function DossierDetail() {
               </Button>
             </div>
           </div>
-          {dossier.presentations.length === 0 && (
+
+          {/* Admin filter bar */}
+          <EmployeeFilterBar />
+
+          {filteredPresentations.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <FileText size={32} className="mx-auto mb-2 opacity-30" />
-              <p className="text-sm">Aucune présentation pour ce dossier</p>
+              <p className="text-sm">Aucune présentation{filterEmploye !== "tous" ? ` pour ${filterEmploye}` : " pour ce dossier"}</p>
             </div>
           )}
-          {dossier.presentations.map((p: any) => (
+
+          {filteredPresentations.map((p: any) => (
             <Card key={p.version} className={`border-2 ${p.valideParClient ? "border-emerald-300" : "border-border/50"}`}>
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">V{p.version}</div>
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                      V{p.version}
+                    </div>
                     <div>
                       <p className="font-semibold">Version {p.version}</p>
                       <p className="text-xs text-muted-foreground">{new Date(p.dateCreation).toLocaleDateString("fr-FR")}</p>
                     </div>
+                    {/* Employé qui a créé cette version */}
+                    {p.employeNom && (
+                      <Badge variant="outline" className="text-xs gap-1 text-primary border-primary/30">
+                        <User size={9} /> {p.employeNom}
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-emerald-600">{p.totalHT.toLocaleString()} $</p>
@@ -434,13 +589,38 @@ export default function DossierDetail() {
                       : <Badge variant="secondary" className="text-xs">En attente</Badge>}
                   </div>
                 </div>
+
                 {p.notes && <p className="text-sm text-muted-foreground mb-2">{p.notes}</p>}
+
+                {/* Commentaire client — bien visible pour admin */}
                 {p.commentaireClient && (
-                  <div className="bg-amber-50 border border-amber-100 rounded p-2 text-xs text-amber-800">
-                    <strong>Client : </strong>{p.commentaireClient}
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+                    <p className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1">
+                      💬 Retour client :
+                    </p>
+                    <p className="text-sm text-amber-800 font-medium">{p.commentaireClient}</p>
                   </div>
                 )}
-                <div className="mt-3 flex gap-2">
+
+                {/* Documents joints à cette version */}
+                {p.documents?.length > 0 && (
+                  <div className="mb-3 p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                      <Paperclip size={11} /> Documents joints ({p.documents.length})
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {p.documents.map((doc: any) => (
+                        <div key={doc.nom} className="flex items-center gap-1.5 px-2.5 py-1 bg-background border border-border rounded-lg text-xs">
+                          <span>{FILE_ICONS[doc.type] ?? "📎"}</span>
+                          <span className="font-medium">{doc.nom}</span>
+                          <Button variant="ghost" size="sm" className="h-5 px-1 text-xs text-muted-foreground">↓</Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
                   <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => navigate(`/dossiers/${id}/presentation`)}>
                     <FileText size={12} /> Voir détails
                   </Button>
@@ -459,12 +639,17 @@ export default function DossierDetail() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">
-              {dossier.paiements.length} paiement{dossier.paiements.length > 1 ? "s" : ""} enregistré{dossier.paiements.length > 1 ? "s" : ""}
+              {filteredPaiements.length} paiement{filteredPaiements.length > 1 ? "s" : ""} enregistré{filteredPaiements.length > 1 ? "s" : ""}
+              {filterEmploye !== "tous" && ` · ${filterEmploye}`}
             </p>
             <Button size="sm" className="gap-2" onClick={() => navigate(`/dossiers/${id}/paiements`)}>
               <Plus size={14} /> Nouveau paiement
             </Button>
           </div>
+
+          {/* Admin filter bar */}
+          <EmployeeFilterBar />
+
           <div className="grid grid-cols-3 gap-4 mb-4">
             <Card className="border-border/50"><CardContent className="p-4">
               <p className="text-xs text-muted-foreground">Total</p>
@@ -479,13 +664,15 @@ export default function DossierDetail() {
               <p className="text-xl font-bold text-amber-600">{solde.toLocaleString()} $</p>
             </CardContent></Card>
           </div>
-          {dossier.paiements.length === 0 && (
+
+          {filteredPaiements.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
               <DollarSign size={28} className="mx-auto mb-2 opacity-30" />
-              <p className="text-sm">Aucun paiement enregistré</p>
+              <p className="text-sm">Aucun paiement{filterEmploye !== "tous" ? ` pour ${filterEmploye}` : " enregistré"}</p>
             </div>
           )}
-          {dossier.paiements.map((p: any) => (
+
+          {filteredPaiements.map((p: any) => (
             <Card key={p.id} className="border-border/50">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -495,6 +682,12 @@ export default function DossierDetail() {
                   <div>
                     <p className="font-semibold">{p.montant.toLocaleString()} $</p>
                     <p className="text-xs text-muted-foreground">{p.note}</p>
+                    {/* Employé qui a enregistré ce paiement */}
+                    {p.employeNom && (
+                      <p className="text-xs text-primary flex items-center gap-1 mt-0.5">
+                        <User size={9} /> {p.employeNom}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="text-right">
@@ -534,7 +727,9 @@ export default function DossierDetail() {
             ))}
           </div>
           <div className="flex gap-3 pt-4 border-t border-border">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">YE</div>
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
+              {CURRENT_USER.nom.split(" ").map(w => w[0]).join("").slice(0, 2)}
+            </div>
             <div className="flex-1 space-y-2">
               <Textarea placeholder="Ajouter un commentaire..." rows={3} value={newComment} onChange={(e) => setNewComment(e.target.value)} />
               <Button size="sm" disabled={!newComment.trim()} className="gap-2" onClick={handleSendComment}>

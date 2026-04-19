@@ -1,13 +1,13 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, Download, Plus, Minus, Save, Info } from "lucide-react";
+import { ArrowLeft, Download, Plus, Minus, Save, FileSpreadsheet } from "lucide-react";
 import { ALL_DOSSIERS } from "@/data/allDossiers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-// Imported from BS structure
+// ─── BS Template ─────────────────────────────────────────────────────────────
 const BS_TEMPLATE = [
   {
     jour: "Jour 1 - 27 Avril",
@@ -105,34 +105,78 @@ const BS_TEMPLATE = [
 
 type ServiceLine = { description: string; unite: number; tarifUnitaire: number; nb: number; total: number };
 
+// ─── CSV / Excel export helper ────────────────────────────────────────────────
+function exportToCSV(data: typeof BS_TEMPLATE, dossierRef: string, margin: number) {
+  const rows: string[][] = [];
+  rows.push(["Dossier", dossierRef, "", "", "", ""]);
+  rows.push(["", "", "", "", "", ""]);
+  rows.push(["JOUR / SECTION", "DESCRIPTION", "UNITÉ", "TARIF ($)", "Nº", "TOTAL ($)"]);
+
+  let grandCost = 0;
+  data.forEach((jour) => {
+    rows.push([jour.jour, "", "", "", "", ""]);
+    jour.sections.forEach((section) => {
+      rows.push(["", section.titre, "", "", "", ""]);
+      section.services.forEach((svc) => {
+        rows.push(["", svc.description, String(svc.unite), String(svc.tarifUnitaire), String(svc.nb), String(svc.total)]);
+        grandCost += svc.total;
+      });
+    });
+  });
+
+  const totalAvecMarge = grandCost * (1 + margin / 100);
+  rows.push(["", "", "", "", "", ""]);
+  rows.push(["COÛT DE REVIENT", "", "", "", "", String(grandCost)]);
+  rows.push([`MARGE (${margin}%)`, "", "", "", "", String(Math.round(grandCost * margin / 100))]);
+  rows.push(["TOTAL VENTE", "", "", "", "", String(Math.round(totalAvecMarge))]);
+
+  const csvContent = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+  const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `Costing_${dossierRef}_${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function DossierCosting() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dossier = ALL_DOSSIERS.find((d) => d.id === id);
 
   const [data, setData] = useState(BS_TEMPLATE);
-  const [margin, setMargin] = useState(15); // %
+  const [margin, setMargin] = useState(15);
+  const [exported, setExported] = useState(false);
 
   if (!dossier) return <div className="p-8 text-center">Dossier introuvable.</div>;
 
-  const grandTotal = data.reduce((acc, j) =>
-    acc + j.sections.reduce((a, s) => a + s.services.reduce((x, sv) => x + sv.total, 0), 0), 0
+  const grandTotal = data.reduce(
+    (acc, j) => acc + j.sections.reduce((a, s) => a + s.services.reduce((x, sv) => x + sv.total, 0), 0),
+    0
   );
   const totalAvecMarge = grandTotal * (1 + margin / 100);
   const totalParPax = dossier.nombrePax > 0 ? totalAvecMarge / dossier.nombrePax : 0;
 
   const updateService = (joiIdx: number, secIdx: number, srvIdx: number, field: keyof ServiceLine, value: number | string) => {
-    setData(prev => {
+    setData((prev) => {
       const next = JSON.parse(JSON.stringify(prev));
       const svc = next[joiIdx].sections[secIdx].services[srvIdx];
       (svc as any)[field] = value;
       svc.total = svc.unite * svc.tarifUnitaire * svc.nb;
-      // recalc subtotal
       next[joiIdx].subtotal = next[joiIdx].sections.reduce(
-        (a: number, s: any) => a + s.services.reduce((x: number, sv: any) => x + sv.total, 0), 0
+        (a: number, s: any) => a + s.services.reduce((x: number, sv: any) => x + sv.total, 0),
+        0
       );
       return next;
     });
+  };
+
+  const handleExport = () => {
+    exportToCSV(data, dossier.reference, margin);
+    setExported(true);
+    setTimeout(() => setExported(false), 3000);
   };
 
   return (
@@ -144,10 +188,18 @@ export default function DossierCosting() {
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-foreground">Costing — {dossier.reference}</h1>
-          <p className="text-muted-foreground">{dossier.clientNom} • {dossier.nombrePax} pax</p>
+          <p className="text-muted-foreground">{dossier.clientNom} · {dossier.nombrePax} pax</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2"><Download size={15} /> Export Excel</Button>
+          {/* Export Excel/CSV button */}
+          <Button
+            variant="outline"
+            className={`gap-2 transition-colors ${exported ? "border-emerald-500 text-emerald-600 bg-emerald-50" : ""}`}
+            onClick={handleExport}
+          >
+            <FileSpreadsheet size={15} className={exported ? "text-emerald-600" : ""} />
+            {exported ? "✓ Exporté !" : "Export Excel"}
+          </Button>
           <Button className="gap-2"><Save size={15} /> Sauvegarder</Button>
         </div>
       </div>
@@ -162,15 +214,13 @@ export default function DossierCosting() {
         </Card>
         <Card className="border-border/50">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-xs text-muted-foreground">Marge (%)</p>
-            </div>
+            <p className="text-xs text-muted-foreground mb-1">Marge (%)</p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setMargin(m => Math.max(0, m - 1))}>
+              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setMargin((m) => Math.max(0, m - 1))}>
                 <Minus size={12} />
               </Button>
               <span className="text-xl font-bold w-10 text-center">{margin}%</span>
-              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setMargin(m => m + 1)}>
+              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setMargin((m) => m + 1)}>
                 <Plus size={12} />
               </Button>
             </div>
@@ -188,6 +238,15 @@ export default function DossierCosting() {
             <p className="text-2xl font-bold">{Math.round(totalParPax).toLocaleString()} $</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Export info banner */}
+      <div className="flex items-center gap-3 px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700">
+        <FileSpreadsheet size={14} />
+        <span>
+          Cliquez sur <strong>Export Excel</strong> pour télécharger ce costing en fichier CSV compatible Excel.
+          Vous pouvez ensuite l'attacher à une présentation depuis l'onglet Présentations.
+        </span>
       </div>
 
       {/* Costing table */}
