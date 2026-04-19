@@ -282,7 +282,7 @@ function AddLeadModal({
               <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Feras">Feras</SelectItem>
-                <SelectItem value="Adam">Adam</SelectItem>
+               
               </SelectContent>
             </Select>
           </div>
